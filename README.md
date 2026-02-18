@@ -146,6 +146,9 @@ Every scan returns a `ScanVerdict` with these fields:
 | 4 | block | phishing |
 | 5 | block | c2 |
 | -100 | pending | (re-poll) |
+| -101 | allow | error (analysis failed) |
+| -102 | allow | unknown (unable to analyze) |
+| -103 | allow | invalid hash |
 
 ## Architecture
 
@@ -205,3 +208,7 @@ See the `examples/` directory:
 ## License
 
 Apache 2.0 — see [LICENSE](LICENSE).
+
+## Authors
+
+Built by **Scott Thornton** and **William Bagdan**.

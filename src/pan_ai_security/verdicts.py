@@ -126,6 +126,9 @@ WILDFIRE_VERDICT_MAP: dict[int, tuple[Verdict, Category, str]] = {
     4: (Verdict.BLOCK, Category.PHISHING, "phishing"),
     5: (Verdict.BLOCK, Category.C2, "command_and_control"),
     -100: (Verdict.PENDING, Category.PENDING, "pending"),
+    -101: (Verdict.ALLOW, Category.BENIGN, "error"),      # Analysis error
+    -102: (Verdict.ALLOW, Category.BENIGN, "unknown"),     # Unable to analyze
+    -103: (Verdict.ALLOW, Category.BENIGN, "invalid_hash"),  # Invalid hash
 }
 
 
@@ -156,7 +159,7 @@ def verdict_from_wildfire(
     return ScanVerdict(
         verdict=verdict_val,
         category=category_val,
-        confidence=1.0 if verdict_code != -100 else 0.0,
+        confidence=1.0 if verdict_code >= 0 else 0.0,
         source=Source.WILDFIRE,
         scan_id=sha256,
         threats=threats,

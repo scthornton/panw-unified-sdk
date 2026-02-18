@@ -98,6 +98,14 @@ class WildFireClient:
         try:
             async with session.post(url, data=data) as resp:
                 body = await resp.text()
+                if resp.status == 418:
+                    raise WildFireError(
+                        f"WildFire rejected file '{resolved_filename}': "
+                        "Unsupported file type. WildFire accepts PE, PDF, "
+                        "Office, APK, JAR, and archive formats — not plain text.",
+                        status_code=418,
+                        details={"response_body": body[:500]},
+                    )
                 if resp.status != 200:
                     raise WildFireError(
                         f"WildFire submit failed with HTTP {resp.status}",
