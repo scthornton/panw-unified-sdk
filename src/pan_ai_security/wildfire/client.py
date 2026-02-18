@@ -174,43 +174,52 @@ class WildFireClient:
         timeout = max_wait or self._config.wildfire_max_wait
         start_time = time.monotonic()
 
-        # Submit the file
-        submit_result = await self.submit_file_async(file, filename)
-        sha256 = submit_result.sha256
-        logger.info("File submitted successfully. SHA-256: %s", sha256[:16])
+        try:
+            # Submit the file
+            submit_result = await self.submit_file_async(file, filename)
+            sha256 = submit_result.sha256
+            logger.info("File submitted successfully. SHA-256: %s", sha256[:16])
 
-        # Poll for verdict
-        while True:
-            elapsed = time.monotonic() - start_time
-            if elapsed > timeout:
-                raise ScanTimeoutError(
-                    f"WildFire verdict still pending after {elapsed:.0f}s for {sha256[:16]}",
-                    elapsed_seconds=elapsed,
-                    details={"sha256": sha256},
-                )
+            # Poll for verdict
+            while True:
+                elapsed = time.monotonic() - start_time
+                if elapsed > timeout:
+                    raise ScanTimeoutError(
+                        f"WildFire verdict still pending after {elapsed:.0f}s for {sha256[:16]}",
+                        elapsed_seconds=elapsed,
+                        details={"sha256": sha256},
+                    )
 
-            verdict_result = await self.get_verdict_async(sha256)
+                verdict_result = await self.get_verdict_async(sha256)
 
-            if not verdict_result.is_pending:
-                duration_ms = int((time.monotonic() - start_time) * 1000)
-                logger.info(
-                    "WildFire verdict received: code=%d for %s (%.1fs)",
-                    verdict_result.verdict_code,
-                    sha256[:16],
-                    duration_ms / 1000,
-                )
-                return verdict_from_wildfire(
-                    verdict_code=verdict_result.verdict_code,
-                    sha256=sha256,
-                    raw_response={
-                        "submit": submit_result.to_dict(),
-                        "verdict": verdict_result.to_dict(),
-                    },
-                    duration_ms=duration_ms,
-                )
+                if not verdict_result.is_pending:
+                    duration_ms = int((time.monotonic() - start_time) * 1000)
+                    logger.info(
+                        "WildFire verdict received: code=%d for %s (%.1fs)",
+                        verdict_result.verdict_code,
+                        sha256[:16],
+                        duration_ms / 1000,
+                    )
+                    return verdict_from_wildfire(
+                        verdict_code=verdict_result.verdict_code,
+                        sha256=sha256,
+                        raw_response={
+                            "submit": submit_result.to_dict(),
+                            "verdict": verdict_result.to_dict(),
+                        },
+                        duration_ms=duration_ms,
+                    )
 
-            logger.debug("Verdict pending for %s, waiting %ds...", sha256[:16], interval)
-            await asyncio.sleep(interval)
+                logger.debug("Verdict pending for %s, waiting %ds...", sha256[:16], interval)
+                await asyncio.sleep(interval)
+        finally:
+            # Close session after each scan to prevent "Event loop is closed" errors.
+            # When called via sync wrappers, asyncio.run() closes the event loop after
+            # completion, leaving the aiohttp session bound to a dead loop. Cleaning up
+            # here ensures the next scan gets a fresh session on a fresh loop.
+            if self._session and not self._session.closed:
+                await self._session.close()
+            self._session = None
 
     # ------------------------------------------------------------------
     # Sync wrappers
