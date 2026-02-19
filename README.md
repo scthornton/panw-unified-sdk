@@ -63,6 +63,8 @@ Three architectural pieces make this work:
 
 ## Installation
 
+**Requirements:** Python 3.10–3.12 (3.12 recommended). Python 3.13 has known compatibility issues — avoid it.
+
 ```bash
 pip install pan-ai-security
 ```
@@ -75,23 +77,36 @@ cd panw-unified-sdk
 pip install -e ".[dev]"
 ```
 
+> **Windows:** If `pip` isn't recognized, use `python -m pip install` instead.
+
 ## Configuration
 
-Set your credentials via environment variables (from your Palo Alto Networks console):
+Copy `.env.example` to `.env` and fill in your credentials:
 
 ```bash
-# AIRS Runtime API (text scanning)
-export PANW_AI_SEC_API_KEY=your-airs-api-key
-export PANW_AI_PROFILE=your-ai-security-profile
-
-# WildFire API (file scanning)
-export PANW_WILDFIRE_API_KEY=your-wildfire-api-key
-
-# Optional: AIRS region (us, eu, in, sg)
-export PANW_AI_SEC_REGION=us
+cp .env.example .env   # macOS/Linux
+copy .env.example .env # Windows
 ```
 
-Or use a `.env` file (copy `.env.example` to `.env`).
+The SDK loads `.env` automatically — no manual exporting required. Alternatively, set environment variables directly:
+
+**macOS / Linux:**
+
+```bash
+export PANW_AI_SEC_API_KEY=your-airs-api-key
+export PANW_AI_PROFILE=your-ai-security-profile
+export PANW_WILDFIRE_API_KEY=your-wildfire-api-key
+export PANW_AI_SEC_REGION=us   # optional: us, eu, in, sg
+```
+
+**Windows (PowerShell):**
+
+```powershell
+$env:PANW_AI_SEC_API_KEY="your-airs-api-key"
+$env:PANW_AI_PROFILE="your-ai-security-profile"
+$env:PANW_WILDFIRE_API_KEY="your-wildfire-api-key"
+$env:PANW_AI_SEC_REGION="us"   # optional: us, eu, in, sg
+```
 
 You only need the keys for the capabilities you use. AIRS-only or WildFire-only mode works fine — the SDK raises helpful errors if you try to scan content that requires the unconfigured API.
 
@@ -201,12 +216,24 @@ Every scan returns a `ScanVerdict` with these fields:
 
 A browser-based demo lets you scan prompts and files in real time and inspect the full `ScanVerdict` response — useful for evaluating the service before writing integration code.
 
+**macOS / Linux:**
+
 ```bash
 # From the repo root
 set -a && source .env && set +a
 pip install uvicorn       # one-time
 python -m uvicorn demo.app:app --reload --port 8080
 ```
+
+**Windows (PowerShell):**
+
+```powershell
+# From the repo root — .env is loaded automatically by the SDK
+python -m pip install uvicorn   # one-time
+python -m uvicorn demo.app:app --reload --port 8080
+```
+
+> **Windows note:** Use `python -m pip` instead of `pip` if `pip` isn't on your PATH. Python 3.12 is recommended — 3.13 has known compatibility issues.
 
 Open [http://localhost:8080](http://localhost:8080). The UI has three panels — type a prompt (or use the quick-test buttons), upload a file, and see verdicts with threat details and raw JSON. The header shows green dots for whichever APIs you have configured.
 
