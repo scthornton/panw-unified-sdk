@@ -63,19 +63,27 @@ Three architectural pieces make this work:
 
 ## Installation
 
-**Requirements:** Python 3.10–3.12 (3.12 recommended). Python 3.13 has known compatibility issues — avoid it.
+**Requirements:** Python 3.10 to 3.12 (3.12 recommended). Python 3.13 has known
+compatibility issues, avoid it.
 
-```bash
-pip install pan-ai-security
-```
-
-Or install from source:
+**Install from source.** This is the supported path today:
 
 ```bash
 git clone https://github.com/scthornton/panw-unified-sdk.git
 cd panw-unified-sdk
-pip install -e ".[dev]"
+pip install --no-cache-dir .
 ```
+
+To work on the SDK itself, install it editable with the test and lint tooling:
+
+```bash
+pip install --no-cache-dir -e ".[dev]"
+pytest
+```
+
+> **Not on PyPI yet.** `pip install pan-ai-security` does **not** work: the package has
+> never been published, and that name currently 404s on PyPI. Earlier versions of this
+> README led with that command. Use the source install above until a release lands here.
 
 > **Windows:** If `pip` isn't recognized, use `python -m pip install` instead.
 

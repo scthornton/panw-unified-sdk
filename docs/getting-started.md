@@ -9,16 +9,20 @@
 
 ## Installation
 
-```bash
-pip install pan-ai-security
-```
-
-For development:
+Install from source. The package is **not published on PyPI**, so
+`pip install pan-ai-security` will fail with a 404.
 
 ```bash
 git clone https://github.com/scthornton/panw-unified-sdk.git
 cd panw-unified-sdk
-pip install -e ".[dev]"
+pip install --no-cache-dir .
+```
+
+For development, install it editable with the test and lint tooling:
+
+```bash
+pip install --no-cache-dir -e ".[dev]"
+pytest
 ```
 
 ## Configuration
